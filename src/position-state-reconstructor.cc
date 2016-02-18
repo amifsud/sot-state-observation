@@ -168,7 +168,6 @@ namespace sotStateObservation
     dynamicgraph::Vector& PositionStateReconstructor::computeOutput
                 (dynamicgraph::Vector & output, const int& inTime)
     {
-
         dynamicgraph::Vector inputSig (inputSIN(inTime));
 
         dynamicgraph::sot::Flags inputFormat (inputFormatSIN(inTime));

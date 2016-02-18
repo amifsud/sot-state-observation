@@ -18,6 +18,16 @@ from dynamic_graph.sot.hrp2.dynamic_hrp2_14 import DynamicHrp2_14
 class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
     def __init__(self, robot, name='flextimator2'):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
+
+	def recomputeDynamic(i,dynamic):
+		dynamic.chest.recompute(i)
+		dynamic.com.recompute(i)
+		dynamic.Jcom.recompute(i)
+		dynamic.angularmomentum.recompute(i)
+		dynamic.inertia.recompute(i)
+		dynamic.waist.recompute(i)
+		dynamic.signal('left-ankle').recompute(i)
+		dynamic.signal('right-ankle').recompute(i)
         
         self.robot = robot
 	self.setSamplingPeriod(self.robot.timeStep)  
@@ -29,7 +39,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
-#	self.setWithComBias(False)
+
 	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2)))
 	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
 
@@ -48,8 +58,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	plug(self.robot.device.robotState,self.robotState.sin)
 	self.robotState.selec(0,36)
 	self.robot.dynamicFF=self.createDynamic(self.robotState.sout,'_dynamicFF')
-        self.robot.dynamicFF.inertia.recompute(1)
-        self.robot.dynamicFF.waist.recompute(1)
+	recomputeDynamic(0,self.robot.dynamicFF)
 
 		# Reconstruction of the position of the contacts in dynamicFF
 	self.leftFootPosFF=Multiply_of_matrixHomo("leftFootPosFF")
@@ -74,6 +83,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 	# Create dynamicEncoders
 	self.robot.dynamicEncoders=self.createDynamic(self.odometryFF.robotStateOut,'_dynamicEncoders')
+	recomputeDynamic(0,self.robot.dynamicEncoders)
 
         # Stack of sensors
 
@@ -152,6 +162,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.IMUVector.inputFormat.value  = '001111'
         self.IMUVector.outputFormat.value = '011111'
         self.IMUVector.setFiniteDifferencesInterval(2)
+	self.inputPosVel.sout.recompute(0)
+	self.IMUVector.setLastVector(self.inputPosVel.sout.value+(0.,)*6)
 
         	# CoM and derivatives
         self.comIn=self.robot.dynamicEncoders.com
@@ -160,6 +172,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.comVector.inputFormat.value  = '000001'
         self.comVector.outputFormat.value = '010101'  
 	self.comVector.setFiniteDifferencesInterval(20)
+	self.comVector.setLastVector(self.comIn.value+(0.,)*15)
 
 		# Compute derivative of Angular Momentum
         self.angMomDerivator = Derivator_of_Vector('angMomDerivator')
@@ -177,6 +190,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         plug(self.robot.dynamicEncoders.waist,self.inputVector.positionWaist)
         plug(self.IMUVector.sout,self.inputVector.imuVector)
         plug(self.calibration.contactsPositionOut,self.inputVector.contactsPosition)
+	self.inputVector.setLastInertia(self.robot.dynamicEncoders.inertia.value)
 
         self.inputVector.setSamplingPeriod(robot.timeStep)
         self.inputVector.setFDInertiaDot(True)     
