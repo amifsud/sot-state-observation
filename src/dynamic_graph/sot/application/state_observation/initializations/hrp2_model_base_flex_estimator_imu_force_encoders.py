@@ -18,17 +18,7 @@ from dynamic_graph.sot.hrp2.dynamic_hrp2_14 import DynamicHrp2_14
 class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
     def __init__(self, robot, name='flextimator2'):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
-
-	def recomputeDynamic(i,dynamic):
-		dynamic.chest.recompute(i)
-		dynamic.com.recompute(i)
-		dynamic.Jcom.recompute(i)
-		dynamic.angularmomentum.recompute(i)
-		dynamic.inertia.recompute(i)
-		dynamic.waist.recompute(i)
-		dynamic.signal('left-ankle').recompute(i)
-		dynamic.signal('right-ankle').recompute(i)
-        
+      
         self.robot = robot
 	self.setSamplingPeriod(self.robot.timeStep)  
 	self.setContactModel(1)
@@ -58,7 +48,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	plug(self.robot.device.robotState,self.robotState.sin)
 	self.robotState.selec(0,36)
 	self.robot.dynamicFF=self.createDynamic(self.robotState.sout,'_dynamicFF')
-	recomputeDynamic(0,self.robot.dynamicFF)
+	self.recomputeDynamic(0,self.robot.dynamicFF)
 
 		# Reconstruction of the position of the contacts in dynamicFF
 	self.leftFootPosFF=Multiply_of_matrixHomo("leftFootPosFF")
@@ -83,7 +73,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 	# Create dynamicEncoders
 	self.robot.dynamicEncoders=self.createDynamic(self.odometryFF.robotStateOut,'_dynamicEncoders')
-	recomputeDynamic(0,self.robot.dynamicEncoders)
+	self.recomputeDynamic(0,self.robot.dynamicEncoders)
+        self.robot.frames['accelerometerEnc'] = self.createFrame("{0}_{1}".format(self.name, 'accelerometerEnc'),matrixToTuple(self.robot.accelerometerPosition),"chest",self.robot.dynamicEncoders)
 
         # Stack of sensors
 
@@ -132,7 +123,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 			# Creating an operational point for the IMU
         self.robot.dynamicEncoders.createJacobian(name+'ChestJ_OpPoint','chest')
         self.imuOpPoint = OpPointModifier(name+'IMU_oppoint')
-        self.imuOpPoint.setTransformation(matrixToTuple(np.linalg.inv(np.matrix(self.robot.dynamicEncoders.chest.value))*np.matrix(self.robot.frames['accelerometer'].position.value)))
+        self.imuOpPoint.setTransformation(matrixToTuple(np.linalg.inv(np.matrix(self.robot.dynamicEncoders.chest.value))*np.matrix(self.robot.frames['accelerometerEnc'].position.value)))
         self.imuOpPoint.setEndEffector(False)
         plug (self.robot.dynamicEncoders.chest,self.imuOpPoint.positionIN)	
         plug (self.robot.dynamicEncoders.signal(name+'ChestJ_OpPoint'),self.imuOpPoint.jacobianIN)
@@ -243,4 +234,23 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
             dynamicTmp.createOpPoint(dynamicTmp.op, dynamicTmp.op)
 
 	return dynamicTmp
+
+    def recomputeDynamic(self,i,dynamic):
+        dynamic.chest.recompute(i)
+	dynamic.com.recompute(i)
+	dynamic.Jcom.recompute(i)
+	dynamic.angularmomentum.recompute(i)
+	dynamic.inertia.recompute(i)
+	dynamic.waist.recompute(i)
+	dynamic.signal('left-ankle').recompute(i)
+	dynamic.signal('right-ankle').recompute(i)
+
+    def createFrame(self, frameName, transformation, operationalPoint, dynamic):
+        frame = OpPointModifier(frameName)
+        frame.setTransformation(transformation)
+        plug(dynamic.signal(operationalPoint),frame.positionIN)
+        plug(dynamic.signal("J{0}".format(operationalPoint)),frame.jacobianIN)
+        frame.position.recompute(frame.position.time + 1)
+        frame.jacobian.recompute(frame.jacobian.time + 1)
+        return frame
 
