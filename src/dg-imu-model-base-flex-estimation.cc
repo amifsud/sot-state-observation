@@ -673,14 +673,13 @@ namespace sotStateObservation
         estimator_.setMeasurementInput(inputWBias);
         getProfiler().stop(PROFILE_READ_ESTIMATOR_CONFIG);
 
-#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
-        }
-#endif
-
         getProfiler().start(PROFILE_READ_ESTIMATOR_ALONE);
         state = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
         getProfiler().stop(PROFILE_READ_ESTIMATOR_ALONE);
 
+#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+        }
+#endif
         return state;
     }
 
