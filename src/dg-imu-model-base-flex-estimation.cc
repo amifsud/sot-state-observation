@@ -575,6 +575,26 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,bool>
                     (*this, & DGIMUModelBaseFlexEstimation::getLimitOn ,docstring));
 
+        docstring =
+                "\n"
+                "    Set whether or not we use an EKF or a linearized KF \n"
+                "\n";
+
+        addCommand(std::string("setLinearizedKF"),
+             new
+             ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool>
+                (*this, &DGIMUModelBaseFlexEstimation::setLinearizedKF, docstring));
+
+        docstring =
+                "\n"
+                "    When we use a linearized KF, ask to recompute the linearization \n"
+                "\n";
+
+        addCommand(std::string("computeLinearization"),
+             new
+             ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool>
+                (*this, &DGIMUModelBaseFlexEstimation::computeLinearization, docstring));
+
 
         stateObservation::ObserverBase::InputVector input(inputSizeBase); input.setZero();
         inputSIN.setConstant(convertVector<dynamicgraph::Vector>(input));
@@ -675,13 +695,13 @@ namespace sotStateObservation
         estimator_.setMeasurementInput(inputWBias);
         getProfiler().stop(PROFILE_READ_ESTIMATOR_CONFIG);
 
-#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
-        }
-#endif
-
         getProfiler().start(PROFILE_READ_ESTIMATOR_ALONE);
         state = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
         getProfiler().stop(PROFILE_READ_ESTIMATOR_ALONE);
+
+#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+        }
+#endif
 
         return state;
     }

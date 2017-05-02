@@ -41,13 +41,15 @@ class FromLocalToGLobalFrame(FromLocalToGlobalFrame):
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
-    def __init__(self, robot, name='flextimator', useMocap=True, dt=0.005):
+    def __init__(self, robot, name='flextimator', useMocap=True, linearized=False, dt=0.005):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
         self.setSamplingPeriod(dt)  
         self.robot = robot
 
 	initDevice(self.robot)
 	computeDynamic(self.robot,0)
+
+	self.setLinearizedKF(linearized)
 
         # Covariances
         self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1.e-2,)*6+(1e-15,)*2+(1.e-8,)*3)))

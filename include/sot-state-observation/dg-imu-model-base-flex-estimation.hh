@@ -286,6 +286,17 @@ namespace sotStateObservation
                 return estimator_.getLimitOn();
             }
 
+            virtual void setLinearizedKF(const bool & b)
+            {
+                estimator_.setAsynchronousFD(b);
+                if(!b) computeLinearization(true);
+            }
+
+            virtual void computeLinearization(const bool & b)
+            {
+                estimator_.computeFD(b);
+            }
+
             /**
             \name Parameters
             @{
