@@ -187,9 +187,9 @@ namespace sotStateObservation
                 estimator_.setUnmodeledForceVariance(d);
             }
 
-            void setForceVariance(const double & d)
+            void setForceVariance(const dynamicgraph::Matrix & d)
             {
-                estimator_.setForceVariance(d);
+                estimator_.setForceVariance(convertMatrix<stateObservation::Matrix>(d));
             }
 
             void setBias(const dynamicgraph::Vector & bias)

@@ -517,7 +517,7 @@ namespace sotStateObservation
                 "\n";
 
         addCommand(std::string("setForceVariance"),
-                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double >
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix >
                     (*this, & DGIMUModelBaseFlexEstimation::setForceVariance,docstring));
 
         docstring  =

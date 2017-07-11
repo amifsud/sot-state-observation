@@ -53,7 +53,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1.e-2,)*6+(1e-15,)*2+(1.e-8,)*3)))
         self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
         self.setUnmodeledForceVariance(1e-13)
-        self.setForceVariance(1e-4)
+        self.setForceVariance(matrixToTuple(np.diag((1e-8,)*12)))
         self.setAbsolutePosVariance(1e-4)
 
         # Contact model definition
