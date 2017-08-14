@@ -114,7 +114,7 @@ namespace sotStateObservation
                      if (modeled_[i] == true) op_.modeledContactsNbrMax +=1;
                  }
 
-                 op_.inputConstSize.resize(42+op_.modeledContactsNbrMax*12);
+                 op_.inputConstSize.resize(48+op_.modeledContactsNbrMax*12);
                  op_.inputConstSize.setZero();
                  op_.inputConstSize.segment(0,input_.size()) = input_;
                  input=convertVector<dynamicgraph::Vector>(op_.inputConstSize);
@@ -160,9 +160,8 @@ namespace sotStateObservation
                 if(time!=timeContacts_) computeContacts(time);
 
                 config_.setZero();
-                if(withUnmodeledMeasurements_) config_(0)=1;
-                if(withModeledForces_ & supportContactsNbr_>=1) config_(1)=1;
-                if(withAbsolutePose_) config(2)=1;
+                if(withModeledForces_ & supportContactsNbr_>=1) config_(0)=1;
+                if(withAbsolutePose_) config_(1)=1;
 
                 config=convertVector<dynamicgraph::Vector>(config_);
                 return config;

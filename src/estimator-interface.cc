@@ -435,7 +435,7 @@ namespace sotStateObservation
 
         /// Parameters
 
-        config_.resize(3); config_.setZero();
+        config_.resize(2); config_.setZero();
 
         // ForceThresholds
         forceThresholds_.resize(hrp2::contact::nbMax);
@@ -738,15 +738,23 @@ namespace sotStateObservation
        op_.dangMomentumOut = op_.m*kine::skewSymmetric(op_.com)*op_.comddot;
 
        // Concatenate input
-       input_.resize(42+op_.contactKine.size()); input_.setZero();
+       input_.resize(48+op_.contactKine.size()); input_.setZero();
        input_.segment(0,9)=comVector;
        input_.segment(9,6)=op_.inert;
        input_.segment(15,6)=op_.dinert;
        input_.segment(21,3)=angMomentum;
        input_.segment(24,3)=op_.dangMomentumOut;
        input_.segment(27,15)=imuVector;
-       input_.segment(42,op_.contactKine.size())=op_.contactKine+op_.bias;
 
+       if(withUnmodeledMeasurements_)
+       {
+           for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
+           {
+               input_.segment(42,6)+=controlFrameForces_[*iterator];
+           }
+       }
+        
+       input_.segment(48,op_.contactKine.size())=op_.contactKine+op_.bias;
    }
 
    void EstimatorInterface::computeMeasurement(const int& time)
@@ -760,20 +768,11 @@ namespace sotStateObservation
        const stateObservation::Vector& accelerometer=convertVector<stateObservation::Vector>(accelerometerSIN.access(time));
        const stateObservation::Vector& gyrometer=convertVector<stateObservation::Vector>(gyrometerSIN.access(time));
 
-       measurement_.resize(6+withUnmodeledMeasurements_*6+withModeledForces_*modeledContactsNbr_*6+withAbsolutePose_*6); measurement_.setZero();
+       measurement_.resize(6+withModeledForces_*modeledContactsNbr_*6+withAbsolutePose_*6); measurement_.setZero();
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
 
        op_.i=6;
-
-       if(withUnmodeledMeasurements_)
-       {
-           for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
-           {
-               measurement_.segment(op_.i,6)+=controlFrameForces_[*iterator];
-           }
-           op_.i+=6;
-       }
 
        if(withModeledForces_)
        {

@@ -231,28 +231,20 @@ namespace sotStateObservation
             {
                 const dynamicgraph::Vector& config = configSIN.access(inTime);
 
-                // For unmodeled Forces
+                // For modeled forces
                 if(config_(0)!=config(0))
                 {
-                    if (config(0)==1) estimator_.setWithUnmodeledMeasurements(true);
-                    if (config(0)==0) estimator_.setWithUnmodeledMeasurements(false);
+                    if (config(0)==1) estimator_.setWithForcesMeasurements(true);
+                    if (config(0)==0) estimator_.setWithForcesMeasurements(false);
                     config_(0)=config(0);
                 }
 
-                // For modeled forces
+                // For absolute pose
                 if(config_(1)!=config(1))
                 {
-                    if (config(1)==1) estimator_.setWithForcesMeasurements(true);
-                    if (config(1)==0) estimator_.setWithForcesMeasurements(false);
+                    if (config(1)==1) estimator_.setWithAbsolutePos(true);
+                    if (config(1)==0) estimator_.setWithAbsolutePos(false);
                     config_(1)=config(1);
-                }
-
-                // For absolute pose
-                if(config_(2)!=config(2))
-                {
-                    if (config(2)==1) estimator_.setWithAbsolutePos(true);
-                    if (config(2)==0) estimator_.setWithAbsolutePos(false);
-                    config_(2)=config(2);
                 }
             }
 

@@ -599,7 +599,7 @@ namespace sotStateObservation
         withForce_=true;
         withUnmodeledForces_ = false;
         withAbsolutePose_ = false;
-        config_.resize(3); config_.setZero();
+        config_.resize(2); config_.setZero();
         configSIN.setConstant(config_);
 
         currentTime_=0;
@@ -643,7 +643,6 @@ namespace sotStateObservation
         else
         {
             if(withForce_!=estimator_.getWithForcesMeasurements()) estimator_.setWithForcesMeasurements(withForce_);
-            if(withUnmodeledForces_!=estimator_.getWithUnmodeledMeasurements()) estimator_.setWithUnmodeledMeasurements(withUnmodeledForces_);
             if(withAbsolutePose_!=estimator_.getWithAbsolutePos()) estimator_.setWithAbsolutePos(withAbsolutePose_);
         }
 
